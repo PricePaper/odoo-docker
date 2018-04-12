@@ -4,7 +4,7 @@ LABEL maintainer="Ean J Price <ean@pricepaper.com>"
 # Generate locale C.UTF-8 for postgres and general locale data
 ENV LANG en_US.utf8
 
-# Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
+# Install some deps and wkhtmltopdf
 RUN set -x; \
         apt-get update \
         && apt-get install -y locales \
@@ -21,6 +21,7 @@ RUN set -x; \
             libssl1.0-dev \
             xz-utils \
             gnupg \
+            python3-xlrd \
         && curl -o wkhtmltox.tar.xz -SL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz \
         && echo '3f923f425d345940089e44c1466f6408b9619562 wkhtmltox.tar.xz' | sha1sum -c - \
         && tar xvf wkhtmltox.tar.xz \
@@ -48,6 +49,12 @@ RUN set -x; \
         apt install -y /tmp/odoo_11.0+e.latest_all.deb \
         && apt-get -y install -f --no-install-recommends \
         && rm -rf /var/lib/apt/lists/* /tmp/odoo_11*.deb
+
+# Install GeoIP database in case we need it for Odoo
+RUN set -x; \
+        mkdir -p /usr/share/GeoIP \
+        && curl -sL http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz \
+            | gunzip -c > /usr/share/GeoIP/GeoLiteCity.dat
 
 # Copy entrypoint script and Odoo configuration file
 COPY ./entrypoint.sh /

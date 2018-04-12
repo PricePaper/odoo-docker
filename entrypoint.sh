@@ -9,8 +9,6 @@ set -e
 : ${USER:=${DB_ENV_POSTGRES_USER:=${POSTGRES_USER:='odoo'}}}
 : ${PASSWORD:=${DB_ENV_POSTGRES_PASSWORD:=${POSTGRES_PASSWORD:='odoo'}}}
 
-export PATH=/opt/odoo:$PATH
-
 DB_ARGS=()
 function check_config() {
     param="$1"
@@ -26,16 +24,16 @@ check_config "db_user" "$USER"
 check_config "db_password" "$PASSWORD"
 
 case "$1" in
-    -- | odoo-bin)
+    -- | odoo)
         shift
         if [[ "$1" == "scaffold" ]] ; then
-            exec odoo-bin "$@"
+            exec odoo "$@"
         else
-            exec odoo-bin "$@" "${DB_ARGS[@]}"
+            exec odoo "$@" "${DB_ARGS[@]}"
         fi
         ;;
     -*)
-        exec odoo-bin "$@" "${DB_ARGS[@]}"
+        exec odoo "$@" "${DB_ARGS[@]}"
         ;;
     *)
         exec "$@"
