@@ -14,14 +14,27 @@ RUN set -x; \
             ca-certificates \
             curl \
             python3-pip \
+            python3-dev \
             python3-setuptools \
             python3-renderpm \
             python3-openssl \
             python3-pycountry \
+            python3-numpy \
             libssl1.0-dev \
             xz-utils \
             gnupg \
             python3-xlrd \
+            build-essential \
+            python3-matplotlib \
+            python3-dateutil \
+            python3-cycler \
+            python3-pyparsing \
+            python3-pandas \
+            python3-wheel \
+            python3-scipy \
+            python3-tk \
+            cython3 \
+            vim-tiny \
         && curl -o wkhtmltox.tar.xz -SL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz \
         && echo '3f923f425d345940089e44c1466f6408b9619562 wkhtmltox.tar.xz' | sha1sum -c - \
         && tar xvf wkhtmltox.tar.xz \
@@ -30,6 +43,9 @@ RUN set -x; \
         && cp -r wkhtmltox/share/man/man1 /usr/local/share/man/ \
         && rm -rf wkhtmltox wkhtmltox.tar.xz \
         && pip3 install --no-cache-dir num2words xlwt phonenumbers
+
+RUN pip3 install --compile --no-cache-dir --no-binary :all: pystan
+RUN pip3 install --compile --no-cache-dir fbprophet
 
 # Use nodesource nodejs because Debian's version isn't maintained
 RUN set -x; \
@@ -48,6 +64,7 @@ COPY files/odoo_11.0+e.latest_all.deb /tmp/
 RUN set -x; \
         apt install -y /tmp/odoo_11.0+e.latest_all.deb \
         && apt-get -y install -f --no-install-recommends \
+        && apt-get -y autoremove \
         && rm -rf /var/lib/apt/lists/* /tmp/odoo_11*.deb
 
 # Install GeoIP database in case we need it for Odoo
