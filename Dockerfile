@@ -46,7 +46,7 @@ RUN set -x; \
             apt-key add - \
         && apt-get update \
         && apt-get install -y postgresql-client-10 \
-        && pip3 install --no-cache-dir phonenumbers pydrive \
+        && pip3 install --no-cache-dir phonenumbers PyDrive \
         && curl -o wkhtmltox.deb -SL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.stretch_amd64.deb \
         && echo '7e35a63f9db14f93ec7feeb0fce76b30c08f2057 wkhtmltox.deb' | sha1sum -c - \
         && dpkg --force-depends -i wkhtmltox.deb \
@@ -69,7 +69,7 @@ RUN set -x; \
   && git clone -b $ODOO_VERSION --depth=1 https://github.com/odoo/odoo.git \
   && rm -rf /odoo/.git /odoo/.github \
   && pip3 install --no-cache-dir -r /odoo/requirements.txt \
-  && git clone -b $ODOO_VERSION --depth=1 https://ejprice:xxxxx@github.com/odoo/enterprise.git \
+  && git clone -b $ODOO_VERSION --depth=1 https://ejprice:Usmc2818@github.com/odoo/enterprise.git \
   && rm -rf /enterprise/.git /enterprise/.github \
   && useradd -c "Odoo User" -d /odoo -m odoo \
   && chown -R odoo:odoo /odoo /enterprise
