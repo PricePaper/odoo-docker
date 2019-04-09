@@ -13,6 +13,9 @@ RUN set -x; \
         && apt-get install -y --no-install-recommends \
             ca-certificates \
             curl \
+            git \
+            gosu \
+            dumb-init \
             python3-pip \
             python3-dev \
             python3-setuptools \
@@ -23,66 +26,64 @@ RUN set -x; \
             libssl1.0-dev \
             xz-utils \
             gnupg \
-            python3-xlrd \
             build-essential \
             python3-matplotlib \
-            python3-dateutil \
             python3-cycler \
-            python3-pyparsing \
-            python3-pandas \
+            python3-pil \
             python3-wheel \
             python3-scipy \
             python3-tk \
             cython3 \
             vim-tiny \
-        && curl -o wkhtmltox.tar.xz -SL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz \
-        && echo '3f923f425d345940089e44c1466f6408b9619562 wkhtmltox.tar.xz' | sha1sum -c - \
-        && tar xvf wkhtmltox.tar.xz \
-        && cp wkhtmltox/lib/* /usr/local/lib/ \
-        && cp wkhtmltox/bin/* /usr/local/bin/ \
-        && cp -r wkhtmltox/share/man/man1 /usr/local/share/man/ \
-        && rm -rf wkhtmltox wkhtmltox.tar.xz \
-        && pip3 install --no-cache-dir num2words xlwt phonenumbers
+            libxslt1-dev \
+            libxslt-dev \
+            zlib1g-dev \
+            libldap2-dev \
+            libsasl2-dev \
+            libxml2-dev \
+        && echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+        && curl -s https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
+            apt-key add - \
+        && apt-get update \
+        && apt-get install -y postgresql-client-10 \
+        && pip3 install --no-cache-dir phonenumbers pydrive boto3 \
+        && curl -o wkhtmltox.deb -SL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.stretch_amd64.deb \
+        && echo '7e35a63f9db14f93ec7feeb0fce76b30c08f2057 wkhtmltox.deb' | sha1sum -c - \
+        && dpkg --force-depends -i wkhtmltox.deb \
+        && apt-get -y install -f --no-install-recommends \
+        && curl -sL https://deb.nodesource.com/setup_10.x | bash - \
+        && apt-get install -y nodejs \
+        && npm install -g less \
+        && npm install -g less-plugin-clean-css \
+        && ln -s `which nodejs` /bin/node \
+        && ln -s `which lessc` /bin/lessc \
+        && rm -rf /var/lib/apt/lists/* wkhtmltox.deb
 
 RUN pip3 install --compile --no-cache-dir --no-binary :all: pystan
 RUN pip3 install --compile --no-cache-dir fbprophet
 
-# Use nodesource nodejs because Debian's version isn't maintained
-RUN set -x; \
-        curl -sL https://deb.nodesource.com/setup_6.x | bash - \
-        && apt-get install -y nodejs
-
-# install newer node and lessc (mostly for less compatibility)
-RUN npm install -g less \
-    && npm install -g less-plugin-clean-css \
-    && ln -s `which nodejs` /bin/node \
-    && ln -s `which lessc` /bin/lessc
-
-# Install Odoo
+## Install Odoo
 ENV ODOO_VERSION 11.0
-COPY files/odoo_11.0+e.latest_all.deb /tmp/
 RUN set -x; \
-        apt install -y /tmp/odoo_11.0+e.latest_all.deb \
-        && apt-get -y install -f --no-install-recommends \
-        && apt-get -y autoremove \
-        && rm -rf /var/lib/apt/lists/* /tmp/odoo_11*.deb
+  cd / \
+  && git clone -b $ODOO_VERSION --depth=1 https://github.com/odoo/odoo.git \
+  && rm -rf /odoo/.git /odoo/.github \
+  && pip3 install --no-cache-dir -r /odoo/requirements.txt \
+  && git clone -b $ODOO_VERSION --depth=1 https://ejprice:***REMOVED***@github.com/odoo/enterprise.git \
+  && rm -rf /enterprise/.git /enterprise/.github \
+  && useradd -c "Odoo User" -d /odoo -m odoo \
+  && chown -R odoo:odoo /odoo /enterprise
 
-# Install GeoIP database in case we need it for Odoo
-RUN set -x; \
-        mkdir -p /usr/share/GeoIP \
-        && curl -sL http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz \
-            | gunzip -c > /usr/share/GeoIP/GeoLiteCity.dat
-
-# Copy entrypoint script and Odoo configuration file
+## Copy entrypoint script and Odoo configuration file
 COPY ./entrypoint.sh /
 COPY ./odoo.conf /etc/odoo/
-RUN chown odoo /etc/odoo/odoo.conf
+RUN set -x; \
+    chown odoo /etc/odoo/odoo.conf \
+    && mkdir -p /mnt/extra-addons /mnt/3rdparty-addons \
+        /var/lib/odoo \
+    && chown -R odoo:odoo /mnt/extra-addons /var/lib/odoo \
+    && chmod +x /entrypoint.sh
 
-# Mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for users addons
-RUN mkdir -p /mnt/extra-addons \
-        && chown -R odoo /mnt/extra-addons
-RUN mkdir -p /mnt/3rdparty-addons \
-        && chown -R odoo /mnt/3rdparty-addons
 VOLUME ["/var/lib/odoo", "/mnt/extra-addons", "/mnt/3rdparty-addons"]
 
 # Expose Odoo services
@@ -92,7 +93,9 @@ EXPOSE 8069 8071 8072
 ENV ODOO_RC /etc/odoo/odoo.conf
 
 # Set default user when running the container
-USER odoo
+# USER odoo
 
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["odoo"]
+WORKDIR /odoo
+
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["/entrypoint.sh", "odoo-bin"]
