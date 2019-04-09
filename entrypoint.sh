@@ -2,8 +2,10 @@
 
 set -e
 
+export PATH=/odoo:$PATH
+
 # set the postgres database host, port, user and password according to the environment
-# and pass them as arguments to the odoo process if not present in the config file
+# and pass them as arguments to the odoo-bin process if not present in the config file
 : ${HOST:=${DB_PORT_5432_TCP_ADDR:='db'}}
 : ${PORT:=${DB_PORT_5432_TCP_PORT:=5432}}
 : ${USER:=${DB_ENV_POSTGRES_USER:=${POSTGRES_USER:='odoo'}}}
@@ -23,17 +25,19 @@ check_config "db_port" "$PORT"
 check_config "db_user" "$USER"
 check_config "db_password" "$PASSWORD"
 
+chown -R odoo:odoo /var/lib/odoo /mnt/*
+
 case "$1" in
-    -- | odoo)
+    -- | odoo-bin)
         shift
         if [[ "$1" == "scaffold" ]] ; then
-            exec odoo "$@"
+            exec gosu odoo odoo-bin "$@"
         else
-            exec odoo "$@" "${DB_ARGS[@]}"
+            exec gosu odoo odoo-bin "$@" "${DB_ARGS[@]}"
         fi
         ;;
     -*)
-        exec odoo "$@" "${DB_ARGS[@]}"
+        exec gosu odoo odoo-bin "$@" "${DB_ARGS[@]}"
         ;;
     *)
         exec "$@"
