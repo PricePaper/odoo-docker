@@ -1,5 +1,6 @@
 FROM debian:stretch
 LABEL maintainer="Ean J Price <ean@pricepaper.com>"
+ARG gitpassword=foobar
 
 # Generate locale C.UTF-8 for postgres and general locale data
 ENV LANG en_US.utf8
@@ -69,7 +70,7 @@ RUN set -x; \
   && git clone -b $ODOO_VERSION --depth=1 https://github.com/odoo/odoo.git \
   && rm -rf /odoo/.git /odoo/.github \
   && pip3 install --no-cache-dir -r /odoo/requirements.txt \
-  && git clone -b $ODOO_VERSION --depth=1 https://ejprice:Usmc2818@github.com/odoo/enterprise.git \
+  && git clone -b $ODOO_VERSION --depth=1 https://ejprice:$gitpassword@github.com/odoo/enterprise.git \
   && rm -rf /enterprise/.git /enterprise/.github \
   && useradd -c "Odoo User" -d /odoo -m odoo \
   && chown -R odoo:odoo /odoo /enterprise
