@@ -69,7 +69,7 @@ RUN set -x; \
   && git clone -b $ODOO_VERSION --depth=1 https://github.com/odoo/odoo.git \
   && rm -rf /odoo/.git /odoo/.github \
   && pip3 install --no-cache-dir -r /odoo/requirements.txt \
-  && git clone -b $ODOO_VERSION --depth=1 https://ejprice:***REMOVED***@github.com/odoo/enterprise.git \
+  && git clone -b $ODOO_VERSION --depth=1 https://ejprice:xxxxx@github.com/odoo/enterprise.git \
   && rm -rf /enterprise/.git /enterprise/.github \
   && useradd -c "Odoo User" -d /odoo -m odoo \
   && chown -R odoo:odoo /odoo /enterprise
