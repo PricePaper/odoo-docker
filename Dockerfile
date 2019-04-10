@@ -41,23 +41,29 @@ RUN set -x; \
             libldap2-dev \
             libsasl2-dev \
             libxml2-dev \
-        && echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
-        && curl -s https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
-            apt-key add - \
-        && apt-get update \
-        && apt-get install -y postgresql-client-10 \
-        && pip3 install --no-cache-dir phonenumbers PyDrive \
         && curl -o wkhtmltox.deb -SL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.stretch_amd64.deb \
         && echo '7e35a63f9db14f93ec7feeb0fce76b30c08f2057 wkhtmltox.deb' | sha1sum -c - \
         && dpkg --force-depends -i wkhtmltox.deb \
         && apt-get -y install -f --no-install-recommends \
+        && rm -rf /var/lib/apt/lists/* wkhtmltox.deb
+
+RUN set -x; \
+        echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+        && curl -s https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
+            apt-key add - \
+        && apt-get update \
+        && apt-get install -y postgresql-client-10 \
+        && rm -rf /var/lib/apt/lists/* 
+
+RUN set -x; \
+        pip3 install --no-cache-dir phonenumbers boto3 pyasn1-modules PyDrive \
         && curl -sL https://deb.nodesource.com/setup_10.x | bash - \
         && apt-get install -y nodejs \
         && npm install -g less \
         && npm install -g less-plugin-clean-css \
         && ln -s `which nodejs` /bin/node \
         && ln -s `which lessc` /bin/lessc \
-        && rm -rf /var/lib/apt/lists/* wkhtmltox.deb
+        && rm -rf /var/lib/apt/lists/* 
 
 RUN pip3 install --compile --no-cache-dir --no-binary :all: pystan
 RUN pip3 install --compile --no-cache-dir fbprophet
