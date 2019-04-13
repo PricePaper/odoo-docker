@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM python:3.7-stretch
 LABEL maintainer="Ean J Price <ean@pricepaper.com>"
 ARG gitpassword=foobar
 
@@ -17,24 +17,10 @@ RUN set -x; \
             git \
             gosu \
             dumb-init \
-            python3-pip \
-            python3-dev \
-            python3-setuptools \
-            python3-renderpm \
-            python3-openssl \
-            python3-pycountry \
-            python3-numpy \
             libssl1.0-dev \
             xz-utils \
             gnupg \
             build-essential \
-            python3-matplotlib \
-            python3-cycler \
-            python3-pil \
-            python3-wheel \
-            python3-scipy \
-            python3-tk \
-            cython3 \
             vim-tiny \
             libxslt1-dev \
             libxslt-dev \
@@ -57,7 +43,7 @@ RUN set -x; \
         && rm -rf /var/lib/apt/lists/* 
 
 RUN set -x; \
-        pip3 install --no-cache-dir phonenumbers boto3 pyasn1-modules PyDrive \
+        pip3 install --no-cache-dir pyOpenSSL gnupg phonenumbers boto3 pyasn1-modules PyDrive \
         && curl -sL https://deb.nodesource.com/setup_10.x | bash - \
         && apt-get install -y nodejs \
         && npm install -g less \
