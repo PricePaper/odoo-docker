@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM python:3.7-stretch
 LABEL maintainer="Ean J Price <ean@pricepaper.com>"
 ARG gitpassword=foobar
 
@@ -17,24 +17,10 @@ RUN set -x; \
             git \
             gosu \
             dumb-init \
-            python3-pip \
-            python3-dev \
-            python3-setuptools \
-            python3-renderpm \
-            python3-openssl \
-            python3-pycountry \
-            python3-numpy \
             libssl1.0-dev \
             xz-utils \
             gnupg \
             build-essential \
-            python3-matplotlib \
-            python3-cycler \
-            python3-pil \
-            python3-wheel \
-            python3-scipy \
-            python3-tk \
-            cython3 \
             vim-tiny \
             libxslt1-dev \
             libxslt-dev \
@@ -57,7 +43,7 @@ RUN set -x; \
         && rm -rf /var/lib/apt/lists/* 
 
 RUN set -x; \
-        pip3 install --no-cache-dir phonenumbers boto3 pyasn1-modules PyDrive \
+        pip3 install --no-cache-dir pyOpenSSL gnupg phonenumbers boto3 pyasn1-modules PyDrive \
         && curl -sL https://deb.nodesource.com/setup_10.x | bash - \
         && apt-get install -y nodejs \
         && npm install -g less \
@@ -66,11 +52,8 @@ RUN set -x; \
         && ln -s `which lessc` /bin/lessc \
         && rm -rf /var/lib/apt/lists/* 
 
-RUN pip3 install --compile --no-cache-dir --no-binary :all: pystan
-RUN pip3 install --compile --no-cache-dir fbprophet
-
 ## Install Odoo
-ENV ODOO_VERSION 11.0
+ENV ODOO_VERSION 12.0
 RUN set -x; \
   cd / \
   && git clone -b $ODOO_VERSION --depth=1 https://github.com/odoo/odoo.git \
@@ -78,18 +61,24 @@ RUN set -x; \
   && pip3 install --no-cache-dir -r /odoo/requirements.txt \
   && git clone -b $ODOO_VERSION --depth=1 https://ejprice:$gitpassword@github.com/odoo/enterprise.git \
   && rm -rf /enterprise/.git /enterprise/.github \
-  && useradd -c "Odoo User" -d /odoo -m odoo \
+  && useradd -c "Odoo User" -u 23789 -d /odoo -m odoo \
   && chown -R odoo:odoo /odoo /enterprise
 
-## Copy entrypoint script and Odoo configuration file
-COPY ./entrypoint.sh /
+# Install fbprophet after Odoo to prevent multiple layers of Python libraries
+RUN pip3 install --compile --no-cache-dir --no-binary :all: pystan
+RUN pip3 install --compile --no-cache-dir fbprophet
+
+## Copy entrypoint script, gpg key for backups and Odoo configuration file
+COPY ./my_gpg_pubkey ./entrypoint.sh /
 COPY ./odoo.conf /etc/odoo/
 RUN set -x; \
     chown odoo /etc/odoo/odoo.conf \
     && mkdir -p /mnt/extra-addons /mnt/3rdparty-addons \
         /var/lib/odoo \
     && chown -R odoo:odoo /mnt/extra-addons /var/lib/odoo \
-    && chmod +x /entrypoint.sh
+    && chmod +x /entrypoint.sh \
+    && gosu odoo gpg --import /my_gpg_pubkey \
+    && rm /my_gpg_pubkey
 
 VOLUME ["/var/lib/odoo", "/mnt/extra-addons", "/mnt/3rdparty-addons"]
 
