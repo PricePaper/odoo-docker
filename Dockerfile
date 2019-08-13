@@ -39,7 +39,7 @@ RUN set -x; \
         && curl -s https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
             apt-key add - \
         && apt-get update \
-        && apt-get install -y postgresql-client-10 \
+        && apt-get install -y postgresql-client-11 \
         && rm -rf /var/lib/apt/lists/* 
 
 RUN set -x; \
@@ -80,10 +80,10 @@ RUN set -x; \
     && gosu odoo gpg --import /my_gpg_pubkey \
     && rm /my_gpg_pubkey
 
-VOLUME ["/var/lib/odoo", "/mnt/extra-addons", "/mnt/3rdparty-addons"]
+VOLUME ["/var/lib/odoo"]
 
 # Expose Odoo services
-EXPOSE 8069 8071 8072
+EXPOSE 8069 8072
 
 # Set the default config file
 ENV ODOO_RC /etc/odoo/odoo.conf
