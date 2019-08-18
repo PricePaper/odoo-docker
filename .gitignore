@@ -3,3 +3,4 @@ addons/enterprise
 files/odoo_11*.deb
 files/odoo_11*.gz
 export/
+extra_modules/*.zip

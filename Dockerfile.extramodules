@@ -1,0 +1,31 @@
+FROM registry2.pricepaper.com/odoo12-base:latest
+LABEL maintainer="Ean J Price <ean@pricepaper.com>"
+
+# Set locale
+ENV LANG en_US.utf8
+
+COPY extra_modules/*.zip /addons/
+# Install 3rd party non-OCA modules
+RUN set -x; \
+    cd /addons \
+    && rm *.zip
+
+# Install OCA modules that are in pip
+RUN set -x; \
+    pip3 install --no-cache-dir --pre --compile odoo-autodiscover \
+    && pip3 install --no-cache-dir --pre --compile  \
+    --extra-index-url=https://wheelhouse.odoo-community.org/oca-simple \
+        odoo12-addon-stock-no-negative \
+        odoo12-addon-auditlog \
+        odoo12-addon-stock-account-change-qty-reason \
+        odoo12-addon-sale-order-revision \
+        odoo12-addon-sale-order-price-recalculation \
+        odoo12-addon-queue-job \
+        odoo12-addon-stock-change-qty-reason \
+        odoo12-addon-stock-cycle-count \
+        odoo12-addon-stock-inventory-chatter \
+        odoo12-addon-purchase-backorder \
+        odoo12-addon-purchase-open-qty \
+        odoo12-addon-stock-inventory-discrepancy \
+        odoo12-addon-stock-inventory-exclude-sublocation 
+
