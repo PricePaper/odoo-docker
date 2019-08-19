@@ -24,6 +24,8 @@ RUN set -x; \
             dumb-init \
             libssl-dev \
             xz-utils \
+            zip \
+            unzip \
             gnupg \
             build-essential \
             vim-tiny \

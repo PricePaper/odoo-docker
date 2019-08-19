@@ -1,4 +1,4 @@
-FROM registry2.pricepaper.com/odoo12-base:latest
+FROM registry2.pricepaper.com/odoo12-docker-base:latest
 LABEL maintainer="Ean J Price <ean@pricepaper.com>"
 
 # Set locale
@@ -8,6 +8,7 @@ COPY extra_modules/*.zip /addons/
 # Install 3rd party non-OCA modules
 RUN set -x; \
     cd /addons \
+    && unzip '*.zip' \
     && rm *.zip
 
 # Install OCA modules that are in pip
