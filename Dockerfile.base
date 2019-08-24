@@ -14,8 +14,8 @@ RUN set -x; \
         && apt-get install -y --no-install-recommends \
             python3-dev \
             python3-pip \
-            nodejs \
-            npm \
+#            nodejs \
+#            npm \
             python3-setuptools \
             ca-certificates \
             curl \
@@ -40,13 +40,12 @@ RUN set -x; \
             wkhtmltopdf \
         && rm -rf /var/lib/apt/lists/* wkhtmltox.deb
 
-RUN set -x; \
-        pip3 install --no-cache-dir --compile pyOpenSSL gnupg phonenumbers boto3 pyasn1-modules PyDrive \
-        && npm install -g less \
-        && npm install -g less-plugin-clean-css \
-        && ln -s `which nodejs` /bin/node \
-        && ln -s `which lessc` /bin/lessc \
-        && rm -rf /var/lib/apt/lists/* 
+#RUN set -x; \
+#        && npm install -g less \
+#        && npm install -g less-plugin-clean-css \
+#        && ln -s `which nodejs` /bin/node \
+#        && ln -s `which lessc` /bin/lessc \
+#        && rm -rf /var/lib/apt/lists/* 
 
 ## Install Odoo
 ENV ODOO_VERSION 12.0
@@ -55,6 +54,7 @@ RUN set -x; \
   && git clone -b $ODOO_VERSION --depth=1 https://github.com/odoo/odoo.git \
   && rm -rf /odoo/.git /odoo/.github \
   && pip3 install --no-cache-dir --compile -e /odoo \
+  && pip3 install --no-cache-dir --compile pyOpenSSL gnupg phonenumbers boto3 pyasn1-modules PyDrive num2words \
   && git clone -b $ODOO_VERSION --depth=1 https://ejprice:$gitpassword@github.com/odoo/enterprise.git \
   && rm -rf /enterprise/.git /enterprise/.github \
   && useradd -c "Odoo User" -u 23789 -d /odoo -m odoo \
@@ -77,7 +77,7 @@ RUN set -x; \
 VOLUME ["/var/lib/odoo"]
 
 # Expose Odoo services
-EXPOSE 8069 8072
+EXPOSE 8069 8071 8072
 
 # Set the default config file
 ENV ODOO_RC /etc/odoo/odoo.conf
