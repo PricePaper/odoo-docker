@@ -1,4 +1,4 @@
-FROM registry2.pricepaper.com/odoo12-docker-extramodules:latest
+FROM registry2.pricepaper.com:5000/odoo12-docker-extramodules:latest
 LABEL maintainer="Ean J Price <ean@pricepaper.com>"
 
 ENV ODOO_VERSION 12.0
