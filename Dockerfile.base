@@ -62,7 +62,7 @@ RUN set -x; \
 
 # Install fbprophet after Odoo to prevent multiple layers of Python libraries
 RUN pip3 install --compile --no-cache-dir --no-binary :all: pystan
-RUN pip3 install --compile --no-cache-dir fbprophet
+RUN pip3 install --compile --no-cache-dir plotly fbprophet
 
 ## Copy entrypoint script, gpg key for backups and Odoo configuration file
 COPY ./my_gpg_pubkey ./entrypoint.sh /
