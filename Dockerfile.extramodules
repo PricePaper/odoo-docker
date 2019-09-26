@@ -1,4 +1,4 @@
-FROM registry2.pricepaper.com:5000/odoo12-docker-base:latest
+FROM registry.pricepaper.com/odoo12-docker-base:latest
 LABEL maintainer="Ean J Price <ean@pricepaper.com>"
 
 # Set locale
@@ -16,6 +16,7 @@ RUN set -x; \
     pip3 install --no-cache-dir --pre --compile odoo-autodiscover \
     && pip3 install --no-cache-dir --pre --compile  \
     --extra-index-url=https://wheelhouse.odoo-community.org/oca-simple \
+        odoo12-addons-oca-server-auth \
         odoo12-addon-stock-no-negative \
         odoo12-addon-auditlog \
         odoo12-addon-stock-account-change-qty-reason \
