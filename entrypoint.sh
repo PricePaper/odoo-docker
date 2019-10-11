@@ -25,7 +25,8 @@ check_config "db_port" "$PORT"
 check_config "db_user" "$USER"
 check_config "db_password" "$PASSWORD"
 
-chown -R odoo:odoo /var/lib/odoo
+# Removed because it doesn't scale well
+#chown -R odoo:odoo /var/lib/odoo
 
 case "$1" in
     -- | odoo-bin)

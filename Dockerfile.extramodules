@@ -14,9 +14,12 @@ RUN set -x; \
 # Install OCA modules that are in pip
 RUN set -x; \
     pip3 install --no-cache-dir --pre --compile odoo-autodiscover \
+    && pip3 install --no-cache-dir --pre --compile \
+       --extra-index-url=https://wheelhouse.odoo-community.org/oca-simple \
+       odoo11-addon-web-search-with-and --no-deps \
     && pip3 install --no-cache-dir --pre --compile  \
     --extra-index-url=https://wheelhouse.odoo-community.org/oca-simple \
-        odoo12-addons-oca-server-auth \
+#        odoo12-addons-oca-server-auth \
         odoo12-addon-stock-no-negative \
         odoo12-addon-auditlog \
         odoo12-addon-stock-account-change-qty-reason \
