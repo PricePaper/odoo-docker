@@ -25,8 +25,13 @@ check_config "db_port" "$PORT"
 check_config "db_user" "$USER"
 check_config "db_password" "$PASSWORD"
 
-# Removed because it doesn't scale well
-#chown -R odoo:odoo /var/lib/odoo
+# Make sure /var/lib/odoo is owned by Odoo user
+# simply chown'ing the directory doesn't scale well
+# so we don't want to do it unless its needed
+ODOO_DIR_OWNER=$(stat -c '%U' /var/lib/odoo)
+if [ $ODOO_DIR_OWNER != "odoo" ]; then
+  chown -R odoo:odoo /var/lib/odoo
+fi
 
 case "$1" in
     -- | odoo-bin)
