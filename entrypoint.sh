@@ -25,6 +25,13 @@ check_config "db_port" "$PORT"
 check_config "db_user" "$USER"
 check_config "db_password" "$PASSWORD"
 
+# Added for redis session database
+#check_config "session_store_prefix" "$REDIS_SESSION_STORE_PREFIX"
+#check_config "session_store_host" "$REDIS_SESSION_STORE_HOST"
+#check_config "session_store_port" "REDIS_SESSION_STORE_PORT"
+#check_config "session_store_dbindex" "REDIS_SESSION_STORE_DBINDEX"
+#check_config "session_store_pass" "REDIS_SESSION_STORE_PASS"
+
 # Make sure /var/lib/odoo is owned by Odoo user
 # simply chown'ing the directory doesn't scale well
 # so we don't want to do it unless its needed

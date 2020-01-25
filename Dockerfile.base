@@ -54,14 +54,23 @@ RUN set -x; \
 
 ## Install Odoo
 ENV ODOO_VERSION 12.0
+
+# We need to patch Odoo to not use postgres database because it breaks
+# Digital Ocean connection pooling
+## TODO use git instead of patch
+COPY ./no_maint_db.patch /
+
 RUN set -x; \
   cd / \
   && git clone -b $ODOO_VERSION --depth=1 https://github.com/odoo/odoo.git \
-  && rm -rf /odoo/.git /odoo/.github \
+  && cd /odoo \
+  && patch -f -p0 < /no_maint_db.patch \
+  && rm -rf /no_maint_db.patch /odoo/.git /odoo/.github \
   && pip3 install --no-cache-dir -r /odoo/requirements.txt \
   && pip3 install --no-cache-dir -e /odoo \
   && pip3 install --no-cache-dir pyOpenSSL gnupg phonenumbers boto3 pyasn1-modules PyDrive 'pandas<0.25' \
-  && git clone -b $ODOO_VERSION --depth=1 https://$gitpassword:@github.com/odoo/enterprise.git \
+  && cd / \
+  && git clone -b $ODOO_VERSION --depth=1 https://$gitpassword@github.com/odoo/enterprise.git/ \
   && rm -rf /enterprise/.git /enterprise/.github \
   && useradd -c "Odoo User" -u 23789 -d /odoo -m odoo \
   && chown -R odoo:odoo /odoo /enterprise 
