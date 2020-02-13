@@ -9,7 +9,8 @@ COPY extra_modules/*.zip /addons/
 RUN set -x; \
     cd /addons \
     && unzip '*.zip' \
-    && rm *.zip
+    && rm *.zip \
+    && chown -R odoo:odoo /addons/*
 
 # Install OCA modules that are in pip
 RUN set -x; \
@@ -52,4 +53,5 @@ RUN set -x; \
       odoo12-addon-muk-autovacuum \
     && git clone --depth=1 -b 12.0 https://github.com/ejprice/muk_base \
     && mv muk_base/muk_session_store /addons \
+    && chown -R odoo:odoo /addons/muk_session_store \
     && rm -rf muk_base
