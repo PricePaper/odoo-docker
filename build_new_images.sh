@@ -6,7 +6,7 @@ export PATH
 BUILD_DATE=`date +%Y%m%d%H%M`
 BUILD_DIR=$PWD
 REGISTRY="local"
-GITLOGIN="gitpassword=01e7750beb8b30e2a8ff7d773a29a9a2e5540c87"
+GITLOGIN="gitpassword=9409e9741e7e972e35e8ce518017686ce8fdacc7"
 
 # Names of the images we need to build
 declare -a IMGNAMES=("base" "extramodules" "ppt")
