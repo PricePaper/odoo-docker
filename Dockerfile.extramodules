@@ -1,4 +1,4 @@
-FROM registry.pricepaper.com/odoo12-docker-base:latest
+FROM registry.digitalocean.com/pricepaper/odoo12-docker-base:latest
 LABEL maintainer="Ean J Price <ean@pricepaper.com>"
 
 # Set locale
