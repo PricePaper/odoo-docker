@@ -38,6 +38,7 @@ RUN set -x; \
             libtiff-dev \
             libfreetype6-dev \
             wkhtmltopdf \
+            python3-psycopg2\
         && echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
         && curl -s https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
             apt-key add - \
@@ -60,7 +61,7 @@ RUN set -x; \
   && rm -rf /no_maint_db.patch /odoo/.git /odoo/.github \
   && pip3 install --no-cache-dir -r /odoo/requirements.txt \
   && pip3 install --no-cache-dir -e /odoo \
-  && pip3 install --no-cache-dir pyOpenSSL gnupg phonenumbers boto3 pyasn1-modules PyDrive pandas\
+  && pip3 install --no-cache-dir pyOpenSSL gnupg phonenumbers boto3 pyasn1-modules PyDrive 'pandas<0.25'\
   && cd / \
   && git clone -b $ODOO_VERSION --depth=1 https://$gitpassword@github.com/odoo/enterprise.git/ \
   && rm -rf /enterprise/.git /enterprise/.github \
