@@ -37,30 +37,31 @@ RUN set -x; \
             libjpeg-dev \
             libtiff-dev \
             libfreetype6-dev \
-            python3-psycopg2 \
             wkhtmltopdf \
+            python3-psycopg2\
         && echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
         && curl -s https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
             apt-key add - \
         && apt-get update \
         && apt-get install -y postgresql-client-12 \
-        && rm -rf /var/lib/apt/lists/* wkhtmltox.deb
-
+        && rm -rf /var/lib/apt/lists/* 
 ## Install Odoo
 ENV ODOO_VERSION 12.0
 
 # We need to patch Odoo to not use postgres database because it breaks
 # Digital Ocean connection pooling
 ## TODO use git instead of patch
+#COPY ./no_maint_db.patch /
 
 RUN set -x; \
   cd / \
   && git clone -b $ODOO_VERSION --depth=1 https://github.com/odoo/odoo.git \
   && cd /odoo \
+#  && patch -f -p0 < /no_maint_db.patch \
   && rm -rf /no_maint_db.patch /odoo/.git /odoo/.github \
   && pip3 install --no-cache-dir -r /odoo/requirements.txt \
   && pip3 install --no-cache-dir -e /odoo \
-  && pip3 install --no-cache-dir pyOpenSSL gnupg phonenumbers boto3 pyasn1-modules PyDrive 'pandas<0.25' \
+  && pip3 install --no-cache-dir pyOpenSSL gnupg phonenumbers boto3 pyasn1-modules PyDrive \
   && cd / \
   && git clone -b $ODOO_VERSION --depth=1 https://$gitpassword@github.com/odoo/enterprise.git/ \
   && rm -rf /enterprise/.git /enterprise/.github \
@@ -69,7 +70,7 @@ RUN set -x; \
 
 # Install fbprophet after Odoo to prevent multiple layers of Python libraries
 RUN pip3 install --compile --no-cache-dir --no-binary :all: pystan
-RUN pip3 install --compile --no-cache-dir holidays plotly fbprophet
+RUN pip3 install --compile --no-cache-dir plotly 'fbprophet<0.6'
 
 ## Copy entrypoint script, gpg key for backups and Odoo configuration file
 COPY ./my_gpg_pubkey ./entrypoint.sh /
