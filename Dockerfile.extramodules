@@ -1,4 +1,4 @@
-FROM local/odoo12-docker-base:latest
+FROM registry.digitalocean.com/pricepaper/odoo12-docker-base:latest
 LABEL maintainer="Ean J Price <ean@pricepaper.com>"
 
 # Set locale
@@ -17,6 +17,7 @@ RUN set -x; \
     pip3 install --no-cache-dir --pre --compile \
     odoo-autodiscover \
     redis \
+    watchdog \
     && pip3 install --no-cache-dir --pre --compile \
        --extra-index-url=https://wheelhouse.odoo-community.org/oca-simple \
        odoo11-addon-web-search-with-and --no-deps \
