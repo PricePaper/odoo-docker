@@ -35,7 +35,6 @@ RUN set -x; \
         odoo12-addons-oca-web \
         odoo12-addons-oca-bank-payment \
         odoo12-addons-oca-stock-logistics-warehouse \
-        odoo12-addons-oca-reporting-engine \
         odoo12-addon-stock-no-negative \
         odoo12-addon-auditlog \
         odoo12-addon-stock-account-change-qty-reason \
