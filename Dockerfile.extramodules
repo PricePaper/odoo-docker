@@ -14,10 +14,7 @@ RUN set -x; \
 
 # Install OCA modules that are in pip
 RUN set -x; \
-    pip3 install --no-cache-dir --pre --compile \
-    odoo-autodiscover \
-    redis \
-    watchdog \
+    pip3 install --no-cache-dir --pre --compile redis 'matplotlib<3.3' python-u2flib-server \
     && pip3 install --no-cache-dir --pre --compile \
        --extra-index-url=https://wheelhouse.odoo-community.org/oca-simple \
        odoo11-addon-web-search-with-and --no-deps \
@@ -48,6 +45,8 @@ RUN set -x; \
         odoo12-addon-purchase-open-qty \
         odoo12-addon-stock-inventory-discrepancy \
         odoo12-addon-stock-inventory-exclude-sublocation \
+        odoo12-addon-auth-session-timeout \
+        odoo12-addon-password-security \
     && pip3 install --no-cache-dir --pre --compile  \
     --extra-index-url=https://nexus.mukit.at/repository/odoo/simple \
       odoo12-addon-muk-autovacuum \
@@ -55,3 +54,8 @@ RUN set -x; \
     && mv muk_base/muk_session_store /addons \
     && chown -R odoo:odoo /addons/muk_session_store \
     && rm -rf muk_base
+
+RUN set -x; \
+    pip3 install --compile --no-cache-dir --no-binary :all: 'pystan < 3.0' \
+    && pip3 install --no-cache-dir --pre --compile \
+      'fbprophet<0.7' \
