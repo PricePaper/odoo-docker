@@ -5,6 +5,9 @@ ENV ODOO_VERSION 12.0
 
 RUN set -x; \
   cd / \
+  && apt update \
+  && apt upgrade -y \
+  && rm -rf /var/lib/apt/lists/* \
   && git clone -b $ODOO_VERSION --depth=1 https://github.com/PricePaper/odoo-custom \
   && rm -rf /odoo-custom/.git /odoo-custom/.github \
   && chown -R odoo:odoo /odoo-custom
