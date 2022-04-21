@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM debian:bullseye-slim AS core
 LABEL maintainer="Ean J Price <ean@pricepaper.com>"
 
 SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
@@ -15,6 +15,7 @@ RUN  apt-get update \
               build-essential \
               ca-certificates \
               curl \
+              cython3 \
               dumb-init \
               fonts-font-awesome \
               fonts-inconsolata \
@@ -38,24 +39,31 @@ RUN  apt-get update \
               lsb-base \
               node-less \
               npm \
+              python3-aiohttp \
               postgresql-client \
               python3-babel \
               python3-boto \
               python3-boto3 \
               python3-chardet \
+              python3-convertdate \
               python3-dateutil \
               python3-decorator \
               python3-dev \
               python3-docutils \
+              python3-ephem \
               python3-freezegun \
               python3-googleapi \
+              python3-holidays \
               python3-jinja2 \
               python3-libsass \
               python3-lxml \
+              python3-matplotlib \
+              python3-mock \
               python3-num2words \
               python3-odf \
               python3-ofxparse \
               python3-openssl \
+              python3-pandas \
               python3-passlib \
               python3-pdfminer \
               python3-phonenumbers \
@@ -67,16 +75,21 @@ RUN  apt-get update \
               python3-pyasn1-modules \
               python3-pydot \
               python3-pyldap \
+              python3-pymeeus \
               python3-pypdf2 \
               python3-qrcode \
+              python3-redis \
               python3-renderpm \
               python3-reportlab \
               python3-requests \
               python3-setuptools \
+              python3-setuptools-git \
               python3-slugify \
               python3-stdnum \
+              python3-tqdm \
               python3-tz \
               python3-vobject \
+              python3-u2flib-server \
               python3-watchdog \
               python3-werkzeug \
               python3-wheel \
@@ -102,6 +115,7 @@ RUN  apt-get update \
 # Install rtlcss
 RUN npm install -g rtlcss
 
+FROM core AS base
 ## Install Odoo
 ENV ODOO_VERSION 15.0
 
@@ -112,6 +126,7 @@ RUN set -x; \
   pip3 install --no-cache-dir -r /odoo/requirements.txt \
   && pip3 install --no-cache-dir -e /odoo \
   && pip3 install --no-cache-dir gnupg PyDrive \
+  && pip3 cache purge \
   && useradd -c "Odoo User" -u 23789 -d /odoo -m odoo \
   && chown -R odoo:odoo /odoo /enterprise
 
