@@ -3,14 +3,21 @@
 ODOO_VERSION=15.0
 
 # remove old copy
-sudo rm -rf odoo enterprise 2> /dev/null
+sudo rm -rf sources/{odoo-cloud-platform,odoo,enterprise} 2> /dev/null
+
+# Get current directory and make temp directory
+CWD=${PWD}
+TMPDIR=$(mktemp -d)
 
 # download new sources
+cd ${TMPDIR}
+git clone --depth=1 -b ${ODOO_VERSION} git@github.com:camptocamp/odoo-cloud-platform.git
 git clone --depth=1 -b ${ODOO_VERSION} git@github.com:odoo/odoo.git
 git clone --depth=1 -b ${ODOO_VERSION} git@github.com:odoo/enterprise.git
 
 # remove git data
-rm -rf {odoo,enterprise}/{.git,.github}
+rm -rf {odoo,enterprise,odoo-cloud-platform}/{.git,.github}
 
-# fix file ownership
-sudo chown -R 23789:23789 odoo enterprise
+# relocate to original directory
+mv ${TMPDIR}/* ${CWD}/sources/
+cd ${CWD}

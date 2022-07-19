@@ -40,7 +40,6 @@ RUN  apt-get update \
               node-less \
               npm \
               python3-aiohttp \
-              postgresql-client \
               python3-babel \
               python3-boto \
               python3-boto3 \
@@ -53,7 +52,6 @@ RUN  apt-get update \
               python3-ephem \
               python3-freezegun \
               python3-googleapi \
-              python3-holidays \
               python3-jinja2 \
               python3-libsass \
               python3-lxml \
@@ -69,6 +67,7 @@ RUN  apt-get update \
               python3-phonenumbers \
               python3-pil \
               python3-pip \
+              python3-plotly \
               python3-polib \
               python3-psutil \
               python3-psycopg2 \
@@ -110,7 +109,8 @@ RUN  apt-get update \
         && curl -o /tmp/wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.buster_amd64.deb \
         && apt-get install -y --no-install-recommends /tmp/wkhtmltox.deb \
         && apt-get autoremove -y \
-        && rm -rf /var/lib/apt/lists/* /tmp/wkhtmltox.deb
+        && rm -rf /var/lib/apt/lists/* /tmp/wkhtmltox.deb \
+        && pip3 config set global.no-cache-dir false
 
 # Install rtlcss
 RUN npm install -g rtlcss
@@ -119,14 +119,13 @@ FROM core AS base
 ## Install Odoo
 ENV ODOO_VERSION 15.0
 
-COPY odoo /odoo
-COPY enterprise /enterprise
+COPY sources/odoo /odoo
+COPY sources/enterprise /enterprise
 
 RUN set -x; \
   pip3 install --no-cache-dir -r /odoo/requirements.txt \
   && pip3 install --no-cache-dir -e /odoo \
   && pip3 install --no-cache-dir gnupg PyDrive \
-  && pip3 cache purge \
   && useradd -c "Odoo User" -u 23789 -d /odoo -m odoo \
   && chown -R odoo:odoo /odoo /enterprise
 

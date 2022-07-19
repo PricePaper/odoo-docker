@@ -1,23 +1,15 @@
-FROM registry.digitalocean.com/pricepaper/odoo15-docker-base:latest AS odooaddons
+FROM registry.digitalocean.com/pricepaper/odoo15-base:latest AS odooaddons
 LABEL maintainer="Ean J Price <ean@pricepaper.com>"
 
 # Set locale
 ENV LANG en_US.utf8
 
-COPY extra_modules/*.zip /addons/
-# Install 3rd party non-OCA modules
-RUN set -x; \
-    cd /addons \
-    && unzip '*.zip' \
-    && rm *.zip \
-    && chown -R odoo:odoo /addons/*
+COPY --chown=odoo:odoo sources/extra_modules /addons/
+COPY --chown=odoo:odoo sources/odoo-cloud-platform /addons/
 
 # Install OCA modules that are in pip
 RUN set -x; \
     pip3 install --no-cache-dir --pre --compile \
-       --extra-index-url=https://wheelhouse.odoo-community.org/oca-simple \
-       odoo13-addon-web-search-with-and --no-deps \
-    && pip3 install --no-cache-dir --pre --compile  \
     --extra-index-url=https://wheelhouse.odoo-community.org/oca-simple \
         'odoo-addons-oca-sale-workflow<16.0' \
         'odoo-addons-oca-purchase-workflow<16.0' \
@@ -33,8 +25,10 @@ RUN set -x; \
         'odoo-addons-oca-stock-logistics-warehouse<16.0' \
         'odoo-addon-stock-no-negative<16.0' \
         'odoo-addon-queue-job<16.0'
-FROM odooaddons AS extramodules-final
+FROM odooaddons AS extramodules-pystan
 RUN set -x; \
-    pip3 install --compile --no-cache-dir --no-binary :all: pystan \
-    && pip3 install --no-cache-dir --pre --compile \
-      'fbprophet' \
+    pip3 install --compile --no-cache-dir pystan==2.19.1.1 LunarCalendar holidays
+
+FROM extramodules-pystan AS extramodules-final
+RUN set -x; \
+    pip3 install --compile --no-cache-dir 'prophet==1.0.1'
