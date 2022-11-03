@@ -70,7 +70,6 @@ RUN  apt-get update \
               python3-plotly \
               python3-polib \
               python3-psutil \
-              python3-psycopg2 \
               python3-pyasn1-modules \
               python3-pydot \
               python3-pyldap \
@@ -101,11 +100,12 @@ RUN  apt-get update \
               xz-utils \
               zip \
               zlib1g-dev \
+        && useradd -c "Odoo User" -u 23789 -d /odoo -m odoo \
         && echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
         && curl -s https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
             apt-key add - \
         && apt-get update \
-        && apt-get install -y postgresql-client-14 \
+        && apt-get install -y postgresql-client-14 python3-psycopg2 \
         && curl -o /tmp/wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.buster_amd64.deb \
         && apt-get install -y --no-install-recommends /tmp/wkhtmltox.deb \
         && apt-get autoremove -y \
@@ -119,15 +119,13 @@ FROM core AS base
 ## Install Odoo
 ENV ODOO_VERSION 15.0
 
-COPY sources/odoo /odoo
-COPY sources/enterprise /enterprise
+COPY --chown=odoo:odoo sources/odoo /odoo
+COPY --chown=odoo:odoo sources/enterprise /enterprise
 
 RUN set -x; \
   pip3 install --no-cache-dir -r /odoo/requirements.txt \
   && pip3 install --no-cache-dir -e /odoo \
-  && pip3 install --no-cache-dir gnupg PyDrive \
-  && useradd -c "Odoo User" -u 23789 -d /odoo -m odoo \
-  && chown -R odoo:odoo /odoo /enterprise
+  && pip3 install --no-cache-dir gnupg PyDrive
 
 ## Copy entrypoint script, gpg key for backups and Odoo configuration file
 COPY ./my_gpg_pubkey ./entrypoint.sh /

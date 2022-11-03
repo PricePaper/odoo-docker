@@ -24,13 +24,13 @@ RUN set -x; \
         'odoo-addons-oca-bank-payment<16.0' \
         'odoo-addons-oca-stock-logistics-warehouse<16.0' \
         'odoo-addon-stock-no-negative<16.0' \
-        'odoo-addon-queue-job<16.0' &\
-    pip3 uninstall odoo-addon-web-search-with-and
+        'odoo-addon-queue-job<16.0' &&\
+    pip3 uninstall -y odoo-addon-web-search-with-and
 
-FROM odooaddons AS extramodules-pystan
-RUN set -x; \
-    pip3 install --compile --no-cache-dir pystan==2.19.1.1 LunarCalendar holidays
+#FROM odooaddons AS extramodules-pystan
+#RUN set -x; \
+#    pip3 install --compile --no-cache-dir pystan==2.19.1.1 LunarCalendar holidays
 
-FROM extramodules-pystan AS extramodules-final
+FROM odooaddons AS extramodules-final
 RUN set -x; \
-    pip3 install --compile --no-cache-dir 'prophet==1.0.1'
+    pip3 install --compile --no-cache-dir 'prophet==1.1'
