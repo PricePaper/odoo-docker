@@ -17,15 +17,15 @@ cd $BUILD_DIR
 for img in "${IMGNAMES[@]}"
 do
   # Build image
-  docker build . -t ${REGISTRY}/odoo15-${img}:${BUILD_DATE} \
-    -f Dockerfile.${img} --pull --no-cache
+  buildah bud -t ${REGISTRY}/odoo15-${img}:${BUILD_DATE} \
+    -f Dockerfile.${img} --pull --no-cache .
   [ $? != 0 ] && exit 1
-  docker tag ${REGISTRY}/odoo15-${img}:${BUILD_DATE} \
+  buildah tag ${REGISTRY}/odoo15-${img}:${BUILD_DATE} \
 	${REGISTRY}/odoo15-${img}:latest
 
   # Push to repository
-  docker push ${REGISTRY}/odoo15-${img}:${BUILD_DATE}
-  docker push ${REGISTRY}/odoo15-${img}:latest
+  buildah push ${REGISTRY}/odoo15-${img}:${BUILD_DATE}
+  buildah push ${REGISTRY}/odoo15-${img}:latest
 done
 echo ${BUILD_DATE} > ${BUILD_DIR}/.buildinfo/current
 kubectl set image deployment/odoo-app odoo=registry.digitalocean.com/pricepaper/odoo15-ppt:${BUILD_DATE}
