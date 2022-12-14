@@ -1,2 +1,3 @@
 config/odoo.conf filter=git-crypt diff=git-crypt
+config/odoo-chat.conf filter=git-crypt diff=git-crypt
 docker-compose.yml filter=git-crypt diff=git-crypt
