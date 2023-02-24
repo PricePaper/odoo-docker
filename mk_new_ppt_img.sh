@@ -28,5 +28,6 @@ do
   buildah push ${REGISTRY}/odoo15-${img}:latest
 done
 echo ${BUILD_DATE} > ${BUILD_DIR}/.buildinfo/current
+kubectl set image deployment/odoo-longpolling odoo-longpolling=registry.digitalocean.com/pricepaper/odoo15-ppt:${BUILD_DATE}
 kubectl set image deployment/odoo-app odoo=registry.digitalocean.com/pricepaper/odoo15-ppt:${BUILD_DATE}
 kubectl rollout status deployment odoo-app
