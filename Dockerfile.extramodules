@@ -4,8 +4,8 @@ LABEL maintainer="Ean J Price <ean@pricepaper.com>"
 # Set locale
 ENV LANG en_US.utf8
 
-COPY --chown=odoo:odoo sources/extra_modules /addons/
-COPY --chown=odoo:odoo sources/odoo-cloud-platform /addons/
+COPY --chown=odoo:odoo sources/addons /addons/
+#COPY --chown=odoo:odoo sources/odoo-cloud-platform /addons/
 
 # Install OCA modules that are in pip
 RUN set -x; \

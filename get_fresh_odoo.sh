@@ -20,4 +20,6 @@ rm -rf {odoo,enterprise,odoo-cloud-platform}/{.git,.github}
 
 # relocate to original directory
 mv ${TMPDIR}/* ${CWD}/sources/
+mv -f ${CWD}/sources/odoo-cloud-platform/* ${CWD}/sources/addons
+rm -rf ${CWD}/sources/odoo-cloud-platform
 cd ${CWD}
