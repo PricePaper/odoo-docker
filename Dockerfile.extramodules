@@ -1,36 +1,31 @@
-FROM registry.digitalocean.com/pricepaper/odoo15-base:latest AS odooaddons
+#FROM registry.digitalocean.com/pricepaper/odoo15-base:latest AS odooaddons
+FROM localhost/o15base:test1 AS odooaddons
 LABEL maintainer="Ean J Price <ean@pricepaper.com>"
 
 # Set locale
 ENV LANG en_US.utf8
 
 COPY --chown=odoo:odoo sources/addons /addons/
-#COPY --chown=odoo:odoo sources/odoo-cloud-platform /addons/
+COPY --chown=odoo:odoo sources/odoo /odoo/
+COPY --chown=odoo:odoo sources/enterprise /enterprise/
 
 # Install OCA modules that are in pip
 RUN set -x; \
-    pip3 install --no-cache-dir --pre --compile \
+#    pip3 install --no-cache-dir --pre --compile \
+    pip3 install --no-cache-dir -e /odoo \
+    && pip3 install --no-cache-dir --upgrade --upgrade-strategy only-if-needed \
     --extra-index-url=https://wheelhouse.odoo-community.org/oca-simple \
-        'odoo-addons-oca-sale-workflow<16.0' \
-        'odoo-addons-oca-purchase-workflow<16.0' \
-        'odoo-addons-oca-server-tools<16.0' \
-        'odoo-addons-oca-server-ux<16.0' \
-        'odoo-addons-oca-product-attribute<16.0' \
-        'odoo-addons-oca-account-closing<16.0' \
-        'odoo-addons-oca-account-invoicing<16.0' \
-        'odoo-addons-oca-product-attribute<16.0' \
-        'odoo-addons-oca-partner-contact<16.0' \
-        'odoo-addons-oca-web<16.0' \
-        'odoo-addons-oca-bank-payment<16.0' \
-        'odoo-addons-oca-stock-logistics-warehouse<16.0' \
-        'odoo-addon-stock-no-negative<16.0' \
-        'odoo-addon-queue-job<16.0' &&\
-    pip3 uninstall -y odoo-addon-web-search-with-and
-
-#FROM odooaddons AS extramodules-pystan
-#RUN set -x; \
-#    pip3 install --compile --no-cache-dir pystan==2.19.1.1 LunarCalendar holidays
+    'odoo-addon-queue-job<16.0' \
+    'odoo-addon-partner-firstname<16.0' \
+    'odoo-addon-partner-contact-personal-information-page<16.0' \
+    'odoo-addon-partner-phone-extension<16.0' \
+    'odoo-addon-base-location-geonames-import<16.0' \
+    'odoo-addon-product-form-purchase-link<16.0' \
+    'odoo-addon-auditlog<16.0' \
+    'odoo-addon-stock-location-lockdown<16.0' \
+    'odoo-addon-stock-available-unreserved<16.0' \
+    'odoo-addon-stock-no-negative<16.0'
 
 FROM odooaddons AS extramodules-final
 RUN set -x; \
-    pip3 install --compile --no-cache-dir 'prophet==1.1'
+    pip3 install --compile --no-cache-dir --upgrade --upgrade-strategy only-if-needed 'prophet<1.2'

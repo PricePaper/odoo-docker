@@ -1,18 +1,29 @@
-FROM debian:bullseye-slim AS core
-LABEL maintainer="Ean J Price <ean@pricepaper.com>"
+#!/usr/bin/bash
 
-SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
+set -x
 
-# Generate locale C.UTF-8 for postgres and general locale data
-ENV LANG en_US.utf8
+BUILD_DATE=`date +%Y%m%d%H%M`
+REGISTRY="registry.digitalocean.com/pricepaper"
+BASE="odoo15-base"
+IMAGE="${REGISTRY}/${BASE}:${BUILD_DATE}"
 
-# Install some deps and wkhtmltopdf
-RUN  apt-get update \
-        && apt-get install -y locales \
-        && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
-        && apt-get -y upgrade \
-        && apt-get install -y --no-install-recommends \
-              build-essential \
+
+container=$(buildah from debian:bullseye-slim)
+
+buildah config --author "Ean J Price <ean@pricepaper.com>" \
+      -e LANG="en_US.utf8" \
+      -e ODOO_VERSION=15.0 \
+      -e BUILD_DATE=${BUILD_DATE} \
+      -l build-date=${BUILD_DATE} \
+      -l stage=${BASE} \
+	 $container
+
+buildah run $container bash -x <<EOF
+	apt-get update \
+	&& apt-get install -y locales \
+    && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
+    && apt-get -y upgrade \
+    && apt-get install -y --no-install-recommends \
               ca-certificates \
               curl \
               cython3 \
@@ -53,7 +64,6 @@ RUN  apt-get update \
               python3-ephem \
               python3-freezegun \
               python3-gevent \
-              python3-gnupg \
               python3-googleapi \
               python3-greenlet \
               python3-jinja2 \
@@ -121,45 +131,27 @@ RUN  apt-get update \
         && apt-get install -y --no-install-recommends /tmp/wkhtmltox.deb \
         && apt-get autoremove -y \
         && rm -rf /var/lib/apt/lists/* /tmp/wkhtmltox.deb \
-        && pip3 config set global.no-cache-dir false
+        && pip3 config set global.no-cache-dir false \
+        && pip3 install 'Babel==2.9.1' 'Pillow==9.0.1' 'ebaysdk==2.1.5' PyDrive \
+        && npm install -g rtlcss \
+        && mkdir /addons /etc/odoo /var/lib/odoo \
+        && chown odoo:odoo /addons /var/lib/odoo 
+EOF
+buildah copy --chmod 640 --chown root:odoo $container ./odoo.conf /etc/odoo/
+buildah copy --chmod 755 $container ./entrypoint.sh /
+buildah copy --chmod 755 $container wait-for-psql.py /usr/local/bin/wait-for-psql.py
 
-# Install rtlcss
-RUN npm install -g rtlcss
+buildah config \
+	--env ODOO_RC=/etc/odoo/odoo.conf \
+	--env BUILD_DATE=${BUILD_DATE} \
+	--workingdir /odoo \
+	-p 8069 -p 8071 -v /var/lib/odoo \
+	--entrypoint '["/usr/bin/dumb-init", "--"]' \
+	--cmd '["/entrypoint.sh", "odoo-bin"]' \
+	$container
 
-FROM core AS base
-## Install Odoo
-ENV ODOO_VERSION 15.0
+buildah commit $container ${IMAGE}
+buildah tag ${IMAGE} ${REGISTRY}/${BASE}:latest
 
-#COPY --chown=odoo:odoo sources/odoo /odoo
-#COPY --chown=odoo:odoo sources/enterprise /enterprise
-
-RUN set -x; \
-  pip3 install --no-cache-dir 'Babel==2.9.1' 'Pillow==9.0.1' 'ebaysdk==2.1.5' PyDrive \
-
-## Copy entrypoint script, gpg key for backups and Odoo configuration file
-COPY ./my_gpg_pubkey ./entrypoint.sh /
-COPY ./odoo.conf /etc/odoo/
-
-RUN set -x; \
-    mkdir /addons /var/lib/odoo \
-    && chown odoo:odoo /etc/odoo/odoo.conf /addons /var/lib/odoo \
-    && chmod +x /entrypoint.sh 
-    
-
-#&& gosu odoo gpg --import /my_gpg_pubkey \
-#    && rm /my_gpg_pubkey
-
-VOLUME ["/var/lib/odoo"]
-
-# Expose Odoo services
-EXPOSE 8069 8071 8072
-
-# Set the default config file
-ENV ODOO_RC /etc/odoo/odoo.conf
-
-COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
-
-WORKDIR /odoo
-
-ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["/entrypoint.sh", "odoo-bin"]
+buildah push ${IMAGE}
+buildah push ${REGISTRY}/${BASE}:latest
