@@ -1,11 +1,19 @@
 #!/usr/bin/bash
+#
+
+if [-z $1];then
+    echo "usage: $0 arch (amd64/arm64...)"
+    exit 1
+fi
 
 set -x
 
 BUILD_DATE=`date +%Y%m%d%H%M`
 REGISTRY="registry.digitalocean.com/pricepaper"
 BASE="odoo15-base"
-IMAGE="${REGISTRY}/${BASE}:${BUILD_DATE}"
+ARCH=$1
+IMAGE="${REGISTRY}/${BASE}:${ARCH}-${BUILD_DATE}"
+IMAGE_LATEST="${REGISTRY}/${BASE}:${ARCH}-latest"
 
 
 container=$(buildah from debian:bullseye-slim)
@@ -151,7 +159,8 @@ buildah config \
 	$container
 
 buildah commit $container ${IMAGE}
-buildah tag ${IMAGE} ${REGISTRY}/${BASE}:latest
+buildah rm ${IMAGE}
+buildah tag ${IMAGE} ${IMAGE_LATEST}
 
 buildah push ${IMAGE}
-buildah push ${REGISTRY}/${BASE}:latest
+buildah push ${IMAGE_LATEST}

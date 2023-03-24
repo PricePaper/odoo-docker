@@ -5,9 +5,11 @@ set -x
 BUILD_DATE=`date +%Y%m%d%H%M`
 REGISTRY="registry.digitalocean.com/pricepaper"
 BASE="odoo15-core"
-IMAGE="${REGISTRY}/${BASE}:${BUILD_DATE}"
+ARCH=$1
+IMAGE="${REGISTRY}/${BASE}:${ARCH}-${BUILD_DATE}"
+IMAGE_LATEST="${REGISTRY}/${BASE}:${ARCH}-latest"
 
-container=$(buildah from registry.digitalocean.com/pricepaper/odoo15-base:latest)
+container=$(buildah from --arch ${ARCH} registry.digitalocean.com/pricepaper/odoo15-base:${ARCH}-latest)
 
 buildah config --author "Ean J Price <ean@pricepaper.com>" \
         -e BUILD_DATE=${BUILD_DATE} \
@@ -33,12 +35,15 @@ buildah run $container bash -x <<EOF
     'odoo-addon-stock-location-lockdown<16.0' \
     'odoo-addon-stock-available-unreserved<16.0' \
     'odoo-addon-stock-no-negative<16.0' \
+    'odoo-addon-purchase-deposit<16.0' \
+    'odoo-addon-partner-time-to-pay<16.0' \
+    'odoo-addon-purchase-reception-notify<16.0' \
     && pip3 install --upgrade --upgrade-strategy only-if-needed 'prophet<1.2' \
     && pip3 install --upgrade --upgrade-strategy only-if-needed click-odoo
 EOF
 
 buildah commit $container ${IMAGE}
-buildah tag ${IMAGE} ${REGISTRY}/${BASE}:latest
+buildah tag ${IMAGE} ${IMAGE_LATEST}
 
 buildah push ${IMAGE}
-buildah push ${REGISTRY}/${BASE}:latest
+buildah push ${IMAGE_LATEST}

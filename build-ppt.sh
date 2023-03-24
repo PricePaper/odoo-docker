@@ -2,7 +2,7 @@
 
 set -x
 
-container=$(buildah from registry.digitalocean.com/pricepaper/odoo15-core:latest)
+container=$(buildah from --arch amd64 registry.digitalocean.com/pricepaper/odoo15-core:latest)
 
 BUILD_DATE=`date +%Y%m%d%H%M`
 REGISTRY="registry.digitalocean.com/pricepaper"
